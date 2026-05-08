@@ -41,3 +41,46 @@ The example card in the brief showed only a cost number, no Attack/Health values
 ### Prefab Construction
 
 Cards use a ***World Space Canvas* parented to a 3D root, which gives us good visuals using UI images and TMP elements and a 3D object that can be rotated and animated spatially in the deck builder. The prefab has seperate Front and Back faces so the card can be flipped during the draw animation ill implement in part 2. The card root's pivot is at the bottom center so cards can fan naturally around the player hand's pivot point. 
+
+
+## Part 2a: Main Menu
+
+THe Main menu handles UUID generation/lookup and routes the player to either the Deck Builder or Deck Viewer scenes. 
+
+### User Identity flow 
+
+UUIDs are genrated via `System.Guid.NewGuid()` and stored in `PlayerPrefs` under a single key (`user_id`) to follow the brief's constraint of using PlayerPrefs solely for UUID
+- **New User** generates a fresh UUID, persists it, and loads the Deck Builder scene. 
+-**Continue** loads the Deck Viewer scene using the existing UUID. 
+
+The Continue button is disabled rather than hidden when no UUID exists so the user is aware that this is an option that exists once they have a session to return to. 
+
+### Architecture 
+
+`MainMenuController` is a single monobehaviour that : 
+
+1. Reads/Writes the UUID via PlayerPrefs
+2. Drives entry/exit animation via DoTween 
+3. Triggers scene transitions 
+
+Constants (`UserIdKey`, scene names) are declared at the top of the controller
+
+### UI Layout 
+
+The menu uses a screen space - camera canvas with a canvas scaler set to 1920x1080 reference resolution to ensure the layot adapts cleanly across displays. Buttons are arranged via a `VerticalLayoutGroup` + `ContentSizeFilter` combo which auto sizes them and centers them with consistent spacing. This also makes adding more menu options later convenient. 
+
+Title and button groups are wrapped in `CanvasGroup` components so each sections al
+
+### Animation 
+
+All menu animations use DoTween: 
+
+- **Entry Sequence:** On scene load the title fades in and slides down from above; once it lands, the button group slides up from the bottom of the screen. The stagger adds a bit of a flourish to the menu reveal which adds to the general excitement the player would feel at the prospect of booting up a new game. 
+- **Hover Effect:** Buttons scale up 1.05x on `IPointerEnterHandler` and ease back on exit. The script isnt exclusive to the menu and can be used on any UI element. 
+- **Exit sequence:** When a button is clicked, the menu fades out and slides offscreen before the next scene loads. Buttons are disabled at the start of the exit to prevent double-clicks during the fade. 
+
+I sequenced the animations using `DoTween.Sequence()` with `Append/Join`. 
+
+### Known Considerations 
+
+- Hover tween components dont explicitly `DoKill()` on destroy. This is safe within the menu's lifecycle for this demo, as the buttons exist for the entire scene. For a more complex UI where elements are dynamic created/destroyed an `OnDestroy` cleanup hook would be appropriate. 

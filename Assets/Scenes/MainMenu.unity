@@ -475,6 +475,7 @@ GameObject:
   - component: {fileID: 415970117}
   - component: {fileID: 415970116}
   - component: {fileID: 415970115}
+  - component: {fileID: 415970119}
   m_Layer: 5
   m_Name: ContinueButton
   m_TagString: Untagged
@@ -604,6 +605,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 415970113}
   m_CullTransparentMesh: 1
+--- !u!114 &415970119
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 415970113}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9984e2fd1bfc084f91095a20dfac66c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityTest.UI.ButtonHoverEffect
+  hoverScale: 1.05
+  duration: 0.15
 --- !u!1 &541262175
 GameObject:
   m_ObjectHideFlags: 0
@@ -1156,7 +1171,7 @@ GameObject:
   - component: {fileID: 1034713495}
   - component: {fileID: 1034713494}
   m_Layer: 5
-  m_Name: Background_Decor (1)
+  m_Name: Background_Decor_left
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1232,6 +1247,7 @@ GameObject:
   - component: {fileID: 1063607014}
   - component: {fileID: 1063607013}
   - component: {fileID: 1063607016}
+  - component: {fileID: 1063607017}
   m_Layer: 5
   m_Name: NewUserButton
   m_TagString: Untagged
@@ -1361,6 +1377,20 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!114 &1063607017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1063607011}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9984e2fd1bfc084f91095a20dfac66c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityTest.UI.ButtonHoverEffect
+  hoverScale: 1.05
+  duration: 0.15
 --- !u!1 &1117651623
 GameObject:
   m_ObjectHideFlags: 0
@@ -1510,6 +1540,7 @@ GameObject:
   - component: {fileID: 1550900153}
   - component: {fileID: 1550900152}
   - component: {fileID: 1550900151}
+  - component: {fileID: 1550900155}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1605,6 +1636,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1550900155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1550900150}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16ad1069101490146ab4c81b31dcece2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityTest.UI.MainMenuController
+  newUserButton: {fileID: 1063607013}
+  continueButton: {fileID: 415970116}
+  titleGroup: {fileID: 935590655}
+  buttonGroup: {fileID: 598654301}
+  titleTransform: {fileID: 681043458}
+  buttonGroupTransform: {fileID: 1821840743}
 --- !u!1 &1717611916
 GameObject:
   m_ObjectHideFlags: 0
