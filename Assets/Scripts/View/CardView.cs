@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; 
+using TMPro;
 
 public class CardView : MonoBehaviour
 {
@@ -19,7 +19,7 @@ public class CardView : MonoBehaviour
     [Header("Display Data")]
     private CardData _data;
     public CardData Data => _data;
-
+    
     public void Bind(CardData data)
     {
         _data = data;
