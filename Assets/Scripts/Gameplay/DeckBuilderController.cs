@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityTest.Services;
 using UnityTest.UI;
 using UnityTest.View;
 
@@ -18,6 +20,7 @@ namespace UnityTest.Gameplay
         [SerializeField] private HandLayout handLayout;
         [SerializeField] private CardAnimator cardAnimator;
         [SerializeField] private DeckBuilderUI ui;
+        [SerializeField] private JsonBinDeckRepository deckRepository;
 
         private bool _isAnimating;
         private bool _isComplete;
@@ -74,8 +77,40 @@ namespace UnityTest.Gameplay
 
         private void OnSaveClicked()
         {
-            //wired up when I get the API service working 
-            Debug.Log("Save Cliked ! ");
+            ui.SaveButton.interactable = false;
+            ui.DiscardButton.interactable = false;
+            ui.ShowLoading(true);
+
+            var cardIds = new List<string>();
+            foreach (var card in handLayout.Cards)
+            {
+                cardIds.Add(card.Data.CardId);
+            }
+
+            string userId = UserSession.GetUserId();
+
+            deckRepository.SaveDeck(
+                userId,
+                cardIds,
+                success =>
+                {
+                    ui.ShowLoading(false);
+                    if (success)
+                    {
+                        SceneManager.LoadScene("MainMenu");
+                    }
+                    else
+                    {
+                        // Error message already shown via onError callback
+                        ui.SaveButton.interactable = true;
+                        ui.DiscardButton.interactable = true;
+                    }
+                },
+                errorMessage =>
+                {
+                    Debug.LogError($"Save failed: {errorMessage}");
+                    ui.ShowError($"Couldn't save deck: {errorMessage}");
+                });
         }
 
         private void OnDiscardClicked() 

@@ -1317,6 +1317,7 @@ MonoBehaviour:
   handLayout: {fileID: 331935582}
   cardAnimator: {fileID: 1126612547}
   ui: {fileID: 446253795}
+  deckRepository: {fileID: 890329332}
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -1361,6 +1362,52 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &890329331
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 890329333}
+  - component: {fileID: 890329332}
+  m_Layer: 0
+  m_Name: _Services
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &890329332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 890329331}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84c17275c3090d043836288faf5f99bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnityTest.Services.JsonBinDeckRepository
+  binId: 69fe16d3adc21f119a712fc2
+  masterKey: $2a$10$eEU3bYMB79B5DV0ugnWiee4.uSISi42PPdTQh3lBWDKQA71nH7bOW
+--- !u!4 &890329333
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 890329331}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.04146, y: 0, z: 44.80009}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2227,3 +2274,4 @@ SceneRoots:
   - {fileID: 1985053008}
   - {fileID: 446253794}
   - {fileID: 2140408501}
+  - {fileID: 890329333}

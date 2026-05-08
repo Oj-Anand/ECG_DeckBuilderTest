@@ -1,9 +1,9 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using TMPro;
 using DG.Tweening;
-using System;
+using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using UnityTest.Services;
 
 namespace UnityTest.UI
 {
@@ -14,7 +14,6 @@ namespace UnityTest.UI
     ///</summary>
     public class MainMenuController : MonoBehaviour
     {
-        private const string UserIdKey = "user_id";
         private const string DeckBuilderScene = "DeckBuilder";
         private const string DeckViewerScene = "DeckViewer";
 
@@ -45,7 +44,7 @@ namespace UnityTest.UI
         //Otherwise it is disabled but still visible so users are aware of the option
         private void ConfigureContinueButton()
         {
-            bool hasExistingUser = PlayerPrefs.HasKey(UserIdKey);
+            bool hasExistingUser = UserSession.HasUser();
             continueButton.interactable = hasExistingUser;
 
             CanvasGroup cg = continueButton.GetComponent<CanvasGroup>();
@@ -55,16 +54,14 @@ namespace UnityTest.UI
 
         private void OnNewUserClicked()
         {
-            string newUserId = Guid.NewGuid().ToString();
-            PlayerPrefs.SetString(UserIdKey, newUserId);
-            PlayerPrefs.Save();
+            UserSession.CreateUser();
 
             TransitionToScene(DeckBuilderScene);
         }
 
         private void OnContinueClicked()
         {
-            if (!PlayerPrefs.HasKey(UserIdKey)) return;
+            if (!UserSession.HasUser()) return;
             TransitionToScene(DeckViewerScene);
         }
 

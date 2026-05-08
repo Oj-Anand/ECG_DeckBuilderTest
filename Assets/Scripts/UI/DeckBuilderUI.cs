@@ -57,7 +57,12 @@ namespace UnityTest.UI
         {
             loadingOverlay.SetActive(show);
         }
+
+        public void ShowError(string errorMsg)
+        {
+            Debug.Log(errorMsg); 
+        }
        
-    }
+    }   
 }
 
