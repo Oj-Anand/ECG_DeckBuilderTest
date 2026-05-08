@@ -84,3 +84,154 @@ I sequenced the animations using `DoTween.Sequence()` with `Append/Join`.
 ### Known Considerations 
 
 - Hover tween components dont explicitly `DoKill()` on destroy. This is safe within the menu's lifecycle for this demo, as the buttons exist for the entire scene. For a more complex UI where elements are dynamic created/destroyed an `OnDestroy` cleanup hook would be appropriate. 
+
+## Part 2b: Deck Builder
+
+The deck builder is the heart of the metagame loop: spawn a shuffled deck, draw cards one at a time with a multi-stage animation, fan them into a hand, and once the hand limit is reached, save to the remote backend.
+
+
+### Architecture
+
+The scene is split into focused components each of which has a single responsibility; the controller orchestrates the flow between them:
+
+- **`DeckStack`** spawns and manages the visual deck of face-down cards. Exposes `BuildDeck()`, `PopTopCard()`, and a `Count` property.
+- **`HandLayout`** arranges drawn cards in a fan around a hand pivot. Exposes `GetSlotForNextCard()` and `AddCard()`.
+- **`CardAnimator`** performs the draw -> flip -> focus -> settle sequence on a single card.
+- **`DeckBuilderUI`** owns the screen-space UI (hand counter, save/discard buttons, loading overlay).
+- **`DeckBuilderController`** is the orchestrator. It owns the high-level flow (draw -> animate -> add to hand -> check completion -> save) and delegates each step to one of the above.
+
+### Deck Spawning
+
+`DeckStack.BuildDeck()` instantiates one card per `CardData` in the registry, shuffles them with a Fisher-Yates shuffle, and stacks them at the deck anchor with a small Y offset between cards to prevent z-fighting. The deck is built from a `CardRegistry` ScriptableObject which holds references to all 15 cards. This is a single point of access for any system that needs the card pool.
+
+Fisher-Yates was chosen over the common `OrderBy(x => Random.value)` shortcut because the latter is statistically biased and produces noticeably non-uniform shuffles on small lists.
+
+### Draw Animation
+
+The draw animation is a single DOTween `Sequence` with multiple stages:
+
+1. **Lift** -> the card rises off the deck (~0.2s). Anticipation frame.
+2. **Travel + Flip** -> the card moves to the focus anchor while rotating face-up and scaling up (~0.5s). Multiple tweens running in parallel via `Sequence.Join()`.
+3. **Hold** -> the sequence pauses at the focus position. A coroutine watches a flag set mid-sequence, pauses the tween, waits for the player's click, and resumes.
+4. **Settle** -> the card moves to its target slot in the hand fan, scaling down and rotating to match its position in the fan (~0.4s).
+
+The coroutine pattern was utilized to implement the hold stage as DOTween itself doesn't have a "wait for input" primitive. I used a single declarative sequence that keeps the full animation visible in one place. 
+
+### Hand Fanning
+
+`HandLayout` computes each card's target position, rotation, and scale based on its index and the total hand size. Adding a card recomputes the layout for *every* card and tweens them all to their new targets which is a declarative pattern (compute target from state) rather than imperative (push/pop adjustments).
+
+This means adding the 4th card causes cards 1, 2, and 3 to shift slightly to make room, all in parallel, with no special-case code becaus edge cases are the worst.
+
+The fan math also compensates for the card prefab's center pivot: each computed position is offset upward along the card's local up axis, so the visual bottom of each card makes a nice fan shape.
+
+### Hand Limit and Completion
+
+The brief specifies an 8-card hand limit. Once `handLayout.Count >= HandLimit`, the controller sets `_isComplete` to true (which gates further input in `Update`) and shows the completion UI which includes the Save and Discard buttons fading in via DOTween.
+
+- **Save** sends the deck to the remote backend via `IDeckRepository`, then returns to the main menu on success.
+- **Discard** returns to the main menu without saving.
+
+### Known Considerations
+
+- The card prefab's pivot is at its center rather than its bottom. The fan math compensates for this with a runtime offset, but a future iteration would refactor the prefab to have a bottom-anchored pivot, which would simplify the layout math.
+- The deck cards stand upright rather than lying flat on the ground plane. This is a visual choice that could be improved with an additional X-axis rotation in `DeckStack`, but doesn't affect functionality.
+- The `IsClickingDeck()` check in the controller is a stub that returns true for any click. A production version would `Physics.Raycast` from the camera through the cursor and verify the hit collider belongs to the top deck card.
+
+## Part 2c: Deck Viewer
+
+The deck viewer fetches the user's saved decks from the remote backend on scene load and displays them in a scrollable list. Each deck shows its 8 cards as thumbnails, and clicking a thumbnail opens a focus overlay with a larger view.
+
+### Architecture
+
+- **`DeckViewerController`** drives the scene: triggers the API call, handles the response, populates the scroll list, and routes thumbnail clicks to the focus overlay.
+- **`DeckEntryView`** is a prefab representing one row in the scroll list. Bound with a deck number and a list of `CardData`, it instantiates one `CardThumbnail` per card.
+- **`CardThumbnail`** is a prefab representing one small card preview (illustration + name). Raises an event when clicked.
+- **`CardFocusOverlay`** is a full-screen UI overlay that displays a single card at large size when a thumbnail is clicked. Click anywhere to dismiss.
+
+Thumbnails were built as lightweight Image + TextMeshPro UI elements rather than reusing the world-space `CardView` prefab. This is cleaner because thumbnails are pure 2D screen-space UI; nesting a world-space canvas inside a screen-space scroll list would (and did) cause rendering quirks.
+
+### API Loading Flow
+
+On `Start`, the controller calls `IDeckRepository.LoadDecks(userId, ...)`. While the request is in flight, a loading overlay is shown. On success, the response is mapped from card IDs back to full `CardData` via the registry, and a `DeckEntryView` is spawned per deck. On error, an error message is displayed.
+
+The empty state and error state share a single message label for simplicity. In a production app, transient errors would use a separate toast/banner pattern that auto-dismisses, while empty state remains persistent until the underlying state changes.
+
+### Click-to-Focus
+
+Each `CardThumbnail` raises an `OnClicked` event when clicked. The `DeckEntryView` forwards these events upward via its own `OnCardClicked` event. The controller subscribes to this and calls `CardFocusOverlay.Show(cardData)`.
+
+The focus overlay uses a `CanvasGroup` to fade in the dim backdrop and the focused card together, with `interactable` and `blocksRaycasts` toggled on/off so the dismiss-on-click behavior only works when the overlay is visible.
+
+### Known Considerations
+
+- The focused card view rebuilds the card layout in screen-space UI rather than reusing the world-space `CardView` prefab, due to the rendering boundary between screen-space and world-space canvases. A future iteration could use a dedicated camera + RenderTexture to display the actual prefab inside the screen-space overlay.
+- Click to focus is written into the code but has some implementation bugs. 
+
+## Part 3: Persistence and API
+
+### Architecture
+
+Persistence is split across three layers:
+
+- **DTOs** (`UserCollection`, `UserRecord`, `DeckRecord` in `Data/`) are plain `[Serializable]` classes that match the wire format. They contain only primitive types and lists.
+- **`IDeckRepository`** is the persistence contract: `SaveDeck()` and `LoadDecks()`, both async, both report results via callbacks.
+- **`JsonBinDeckRepository`** is the concrete implementation that talks to JSONBin via `UnityWebRequest`.
+- **`UserSession`** is a thin static wrapper around the PlayerPrefs UUID lookup.
+
+Controllers depend on the interface, not the implementation. Swapping JSONBin for a different backend (PlayFab, Firebase, a custom REST API) would require changing only `JsonBinDeckRepository`. None of the controllers know which backend they're talking to.
+
+### Why Callbacks Over Async/Await
+
+The repository methods take `Action<T>` callbacks rather than returning `Task<T>`. This was a deliberate choice: coroutines and `UnityWebRequest` naturally complement callback-based APIs, and async/await in Unity comes with caveats (deadlocks, exception swallowing) that were not worth the risk in a short build window. 
+### Data Format
+
+The brief specifies a wire format like:
+
+```json
+{
+  "user_id": "550e8400-e29b-41d4-a716-446655440000",
+  "decks": [["card_id_1", "card_id_4", ...]]
+}
+```
+
+The implementation wraps each deck in a `DeckRecord` object rather than using bare arrays:
+
+```json
+{
+  "user_id": "...",
+  "decks": [
+    {"card_ids": ["card_id_1", "card_id_4", ...]}
+  ]
+}
+```
+
+This is because Unity's `JsonUtility` does not support serializing `List<List<string>>` directly. The structure preserves the same information and could be migrated to the bare-array format with Newtonsoft.Json if required. JSON-serializable DTOs use `snake_case` field names to match the wire format, while this deviates from C# conventions it is necessary for `JsonUtility` to round-trip correctly.
+
+### Multi-User Bin Strategy
+
+Since the brief restricts PlayerPrefs to UUID storage only, the implementation uses a single shared JSONBin bin to hold all users. The bin contains a `UserCollection` with one `UserRecord` per user, keyed by UUID. On save, the repository fetches the current bin contents, locates or creates the user's record, appends the new deck, and writes the entire bin back.
+
+This has a known concurrency limitation (last-write-wins if two users save simultaneously), which is acceptable for a test but would need to be addressed in production with optimistic concurrency control or per-user bins.
+
+### Loading and Error States
+
+Both the deck builder and deck viewer show a loading overlay during API calls, implemented as a semi-transparent panel with a manually-rotated spinner Image. This was chosen over a built-in animation system because it's three lines of code (`Rotate(0, 0, -180f * Time.deltaTime)` in `Update`) and avoids the overhead of an Animator component for a single rotation.
+
+Errors are caught at the repository layer (HTTP failures, request errors) and surfaced to the controllers via the `onError` callback. The controllers display a human-readable message via the UI's `ShowError` method.
+
+### Known Considerations
+
+- The JSONBin master key is stored in the Inspector field of `JsonBinDeckRepository`. In production, this should be loaded from a gitignored config asset or environment variable to prevent leaking in source control.
+- The save flow does a full bin fetch + write per save which wouldnt scale for many users, but it is sufficient given the time constraints for the test.
+
+## Running the Project
+
+1. Clone the repo and open in Unity 6 (6000.3.6f1) with URP.
+2. Open `Assets/Scenes/MainMenu.unity` as the entry scene.
+3. To test the API integration end-to-end, fill in your own JSONBin bin ID and master key on the `_Services` GameObject in both `DeckBuilder.unity` and `DeckViewer.unity` scenes. Initialize the bin contents to `{"users": []}`.
+4. Press Play. The full flow is: New User -> draw 8 cards (click deck, click again to dismiss focus) -> Save -> Continue from menu -> view saved decks.
+
+## Final Notes
+
+This was a 4-6 hour test executed in approximately 8 hours of focused work. Some polish items (cards lying flat on the table, refining the hand fan curve, a more elaborate focused-card UI) were deprioritized in favor of completing every functional requirement and demonstrating the architectural patterns the brief explicitly evaluates: separation of concerns, persistence layer abstraction, and animation sequencing.
