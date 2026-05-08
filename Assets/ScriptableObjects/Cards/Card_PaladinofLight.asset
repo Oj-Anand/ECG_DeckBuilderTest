@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 168f6c8404918ad429c8d223f28552c5, type: 3}
+  m_Name: Card_PaladinofLight
+  m_EditorClassIdentifier: Assembly-CSharp::CardData
+  cardId: 11
+  cardName: Paladin of Light
+  cost: 6
+  attack: 5
+  health: 6
+  illustration: {fileID: 21300000, guid: 016b94b475ec2ba4f8d15f7dc052d49e, type: 3}
+  description: 'Battlecry: Restore 4 Health to your Hero.'
