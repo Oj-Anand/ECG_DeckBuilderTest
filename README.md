@@ -135,7 +135,6 @@ The brief specifies an 8-card hand limit. Once `handLayout.Count >= HandLimit`, 
 ### Known Considerations
 
 - The card prefab's pivot is at its center rather than its bottom. The fan math compensates for this with a runtime offset, but a future iteration would refactor the prefab to have a bottom-anchored pivot, which would simplify the layout math.
-- The deck cards stand upright rather than lying flat on the ground plane. This is a visual choice that could be improved with an additional X-axis rotation in `DeckStack`, but doesn't affect functionality.
 - The `IsClickingDeck()` check in the controller is a stub that returns true for any click. A production version would `Physics.Raycast` from the camera through the cursor and verify the hit collider belongs to the top deck card.
 
 ## Part 2c: Deck Viewer
@@ -166,7 +165,6 @@ The focus overlay uses a `CanvasGroup` to fade in the dim backdrop and the focus
 ### Known Considerations
 
 - The focused card view rebuilds the card layout in screen-space UI rather than reusing the world-space `CardView` prefab, due to the rendering boundary between screen-space and world-space canvases. A future iteration could use a dedicated camera + RenderTexture to display the actual prefab inside the screen-space overlay.
-- Click to focus is written into the code but has some implementation bugs. 
 
 ## Part 3: Persistence and API
 
@@ -234,4 +232,17 @@ Errors are caught at the repository layer (HTTP failures, request errors) and su
 
 ## Final Notes
 
-This was a 4-6 hour test executed in approximately 8 hours of focused work. Some polish items (cards lying flat on the table, refining the hand fan curve, a more elaborate focused-card UI) were deprioritized in favor of completing every functional requirement and demonstrating the architectural patterns the brief explicitly evaluates: separation of concerns, persistence layer abstraction, and animation sequencing.
+This was a 4-6 hour test executed in approximately 8 hours of focused work. Some polish items (a more elaborate focused-card UI, deck card hover effects) were deprioritized in favor of completing every functional requirement and demonstrating the architectural patterns the brief explicitly evaluates: separation of concerns, persistence layer abstraction, and animation sequencing.
+
+## Post - Submission Refinements
+
+After the initial submission I returned to address 4 issues spotted during a quality pass. 
+
+- **Multi-deck support** The viewer oriignally had no entry point back into the deck builder scene for returing users, allowing users to accumulate multiple decks under the same UUID.
+- **Focus mode event subscription** `DeckViewerController.DisplayDecks` was missing the `entry.OnCardClicked += HandleCardClicked` subscription, leaving the event chain incomplete. Adding the subscription and the handler method restored the click-to-focus behavior.
+- **Deck orientation.** Deck cards now lie flat on the table with backs facing up, via an X-axis rotation in `DeckStack`.
+- **Hand fan readability.** The fan radius was increased so all 8 cards are clearly visible and not stacked on top of one another.
+
+An `OnDrawGizmosSelected` visualization was also added to `HandLayout` to support live in-editor tuning of the fan parameters.
+
+The original submission timestamp is preserved in the git log; these refinements are available for review but should be considered optional context rather than part of the timed submission.
