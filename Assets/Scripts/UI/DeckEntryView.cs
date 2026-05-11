@@ -40,6 +40,7 @@ namespace UnityTest.UI
 
         private void HandleThumbnailClicked(CardData card)
         {
+            //Debug.Log($"[DeckEntry] Forwarding click for: {card?.CardName}");
             OnCardClicked?.Invoke(card);
         }
     }

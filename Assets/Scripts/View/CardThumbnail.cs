@@ -30,6 +30,7 @@ namespace UnityTest.Views
 
         public void OnPointerClick(PointerEventData eventData)
         {
+            //Debug.Log($"[Thumbnail] Clicked: {_data?.CardName}");
             OnClicked?.Invoke(_data);
         }
     }

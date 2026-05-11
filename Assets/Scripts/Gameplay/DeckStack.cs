@@ -15,10 +15,10 @@ namespace UnityTest.Gameplay
         [SerializeField] private CardRegistry registry;
         [SerializeField] private CardView cardPrefab;
         [SerializeField] private Transform deckAnchor;
-
+        
         [Header("Stack visuals")]
         [SerializeField] private float stackOffset = 0.005f; //y offset per card
-        [SerializeField] private Vector3 faceDownEuler = new Vector3(90, 0, 180);
+        [SerializeField] private Vector3 faceDownEuler = new Vector3(-90f, 0f, 0f);
 
         private readonly List<CardView> _cards = new List<CardView>();
 

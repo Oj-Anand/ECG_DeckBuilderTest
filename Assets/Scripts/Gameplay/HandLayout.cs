@@ -71,5 +71,30 @@ namespace UnityTest.Gameplay
 
             return (pos, rot, finalScale);
         }
+
+        private void OnDrawGizmosSelected()
+        {
+            if (handAnchor == null) return;
+
+            Vector3 pivot = handAnchor.position + Vector3.down * fanRadius;
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(pivot, 0.1f);
+
+            // Draw projected card slots for 8 cards
+            int total = 8;
+            Gizmos.color = Color.cyan;
+            for (int i = 0; i < total; i++)
+            {
+                float spread = Mathf.Min(maxSpreadDegrees, anglePerCard * (total - 1));
+                float startAngle = -spread / 2f;
+                float angle = startAngle + (spread / (total - 1)) * i;
+
+                Vector3 offset = Quaternion.Euler(0, 0, -angle) * Vector3.up * fanRadius;
+                Vector3 pos = pivot + offset;
+
+                Gizmos.DrawWireSphere(pos, 0.15f);
+                Gizmos.DrawLine(pivot, pos);
+            }
+        }
     }
 }

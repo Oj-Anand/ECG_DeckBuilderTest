@@ -35,6 +35,8 @@ namespace UnityTest.UI
 
         public void Show(CardData data)
         {
+            //Debug.Log($"[FocusOverlay] Show called with: {data?.CardName ?? "NULL"}");
+
             // Clean up any previously focused card.
             focusIllustration.sprite = data.Illustration;
             focusName.text = data.CardName;

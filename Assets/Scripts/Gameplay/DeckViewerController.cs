@@ -18,10 +18,13 @@ namespace UnityTest.UI
         [SerializeField] private GameObject loadingOverlay;
         [SerializeField] private GameObject emptyStateLabel;
         [SerializeField] private Button backButton;
+        [SerializeField] private Button buildNewDeckButton;
+        [SerializeField] private CardFocusOverlay focusOverlay;
 
         private void Start()
         {
             backButton.onClick.AddListener(() => SceneManager.LoadScene("MainMenu"));
+            buildNewDeckButton.onClick.AddListener(() => SceneManager.LoadScene("DeckBuilder"));
             LoadDecks();
         }
 
@@ -60,7 +63,13 @@ namespace UnityTest.UI
                 DeckEntryView entry = Instantiate(deckEntryPrefab, deckListContent);
                 var cardData = ResolveCards(decks[i]);
                 entry.Bind(i + 1, cardData);
+                entry.OnCardClicked += HandleCardClicked;
             }
+        }
+        private void HandleCardClicked(CardData card)
+        {
+            //Debug.Log($"[Controller] Routing to focus overlay: {card?.CardName}");
+            focusOverlay.Show(card);
         }
 
         private List<CardData> ResolveCards(List<string> cardIds)
