@@ -4,7 +4,7 @@ A deckbuilding metagame loop for ECG's Deckbuilding and Save system test.
 
 ## Tech
 
-- Unity 6 (600.3.6f1), URP
+- Unity 6 (6000.3.6f1), URP
 - DoTween for animation sequencing
 -JSONBIN.io as remote persistence backend
 
