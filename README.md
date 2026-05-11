@@ -9,6 +9,8 @@ A deckbuilding metagame loop for ECG's Deckbuilding and Save system test.
 -JSONBIN.io as remote persistence backend
 
 ## Project Structure 
+
+```
 Assets/
 |-- Art/Cards/ -> Frame, backing, and 15 character illustrations
 |-- Prefabs/Cards -> Card prefab 
@@ -19,7 +21,7 @@ Assets/
 |   |-- Services/ -> (Part 3 Api client servies and deck repo)
 |   |-- UI -> (Part 2 Scene controllers)
 |-- Scenes/ -> MainMenu, DeckBuilder, DeckViewer
-
+```
 ## Part 1: Card Architecture 
 
 A card consists of: 
@@ -69,7 +71,7 @@ Constants (`UserIdKey`, scene names) are declared at the top of the controller
 
 The menu uses a screen space - camera canvas with a canvas scaler set to 1920x1080 reference resolution to ensure the layot adapts cleanly across displays. Buttons are arranged via a `VerticalLayoutGroup` + `ContentSizeFilter` combo which auto sizes them and centers them with consistent spacing. This also makes adding more menu options later convenient. 
 
-Title and button groups are wrapped in `CanvasGroup` components so each sections al
+Title and button groups are wrapped in `CanvasGroup` components so each sections alpha can be tweened as a single value during entry/exit animations.
 
 ### Animation 
 
